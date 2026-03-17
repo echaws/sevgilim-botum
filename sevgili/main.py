@@ -132,7 +132,7 @@ async def on_ready():
         scheduler.add_job(send_random_movie, CronTrigger(hour=h, minute=m))
         
     # Random cat GIFs (3 times daily)
-    cat_times = ["10:30", "14:30", "19:30"]
+    cat_times = ["11:25", "14:30", "19:30"]
     for t in cat_times:
         h, m = map(int, t.split(':'))
         scheduler.add_job(send_random_cat, CronTrigger(hour=h, minute=m))

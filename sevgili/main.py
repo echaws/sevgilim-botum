@@ -46,23 +46,37 @@ def get_days_until_anniversary():
 
 async def send_anniversary_message():
     days_left = get_days_until_anniversary()
-    message = f"❤️ Günaydınnnnnnnnnn Sevgililik yıl dönümümüze tam **{days_left}** gün kaldı! Seni çok seviyoruuuuuuuummmmmmmm. ❤️"
+    
+    embed = discord.Embed(
+        title="⌛ Yıl Dönümü Sayacı",
+        description=f"❤️ Günaydınnnnnnnnnn Sevgililik yıl dönümümüze tam **{days_left}** gün kaldı! Seni çok seviyoruuuuuuuummmmmmmm. ❤️",
+        color=discord.Color.red(),
+        timestamp=datetime.now()
+    )
+    embed.set_footer(text="Her gün daha fazla aşkla...")
     
     user1 = await bot.fetch_user(USER1_ID)
     user2 = await bot.fetch_user(USER2_ID)
     
-    if user1: await user1.send(message)
-    if user2: await user2.send(message)
+    if user1: await user1.send(embed=embed)
+    if user2: await user2.send(embed=embed)
 
 async def send_random_movie():
     movie = random.choice(MOVIES)
-    message = f"🎬 Rastgele Film Önerisi: **{movie}**. Bu akşam izlemeye ne dersin? 🍿"
+    
+    embed = discord.Embed(
+        title="🎬 Günün Film Önerisi",
+        description=f"Bu akşam izlemeye ne dersin?\n\n🍿 **{movie}**",
+        color=discord.Color.blue(),
+        timestamp=datetime.now()
+    )
+    embed.set_footer(text="İyi seyirler dilerim!")
     
     user1 = await bot.fetch_user(USER1_ID)
     user2 = await bot.fetch_user(USER2_ID)
     
-    if user1: await user1.send(message)
-    if user2: await user2.send(message)
+    if user1: await user1.send(embed=embed)
+    if user2: await user2.send(embed=embed)
 
 @bot.event
 async def on_ready():
@@ -107,7 +121,6 @@ async def analyze_chat(ctx):
     emojis = []
     days = collections.defaultdict(int)
     
-    # Regex for emojis
     emoji_pattern = re.compile(r'[\U00010000-\U0010ffff]|<a?:.+?:\d+>')
     
     for content, timestamp in data:
@@ -115,41 +128,39 @@ async def analyze_chat(ctx):
         found_emojis = emoji_pattern.findall(content)
         emojis.extend(found_emojis)
         
-        # timestamp is a string from SQLite
         try:
             dt = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S.%f')
         except ValueError:
             dt = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
         days[str(dt.date())] += 1
 
-    # Most used words
     words = re.findall(r'\w+', all_text)
     filtered_words = [w for w in words if len(w) > 3]
     most_common_words = collections.Counter(filtered_words).most_common(5)
-    
-    # Most used emojis
     most_common_emojis = collections.Counter(emojis).most_common(5)
     
-    # Busiest day
     busiest_day_str = max(days, key=days.get) if days else "N/A"
     busiest_count = days[busiest_day_str] if busiest_day_str != "N/A" else 0
-    
-    # Special keyword check
     askim_count = words.count('aşkım') + words.count('askim')
 
-    response = "📊 **Chat Analiz Raporu** 📊\n\n"
-    response += f"🏆 **En çok kullanılan kelimeler:**\n"
-    for word, count in most_common_words:
-        response += f"- {word}: {count} kez\n"
-        
-    response += f"\n🥰 **En çok kullanılan emojiler:**\n"
-    for emoji, count in most_common_emojis:
-        response += f"- {emoji}: {count} kez\n"
-        
-    response += f"\n📅 **En yoğun konuşulan gün:** {busiest_day_str} ({busiest_count} mesaj)\n"
-    response += f"❤️ Toplamda **{askim_count}** kez 'aşkım' demişsiniz!"
-
-    await ctx.send(response)
+    embed = discord.Embed(
+        title="📊 Chat Analiz Raporu",
+        description="Aranızdaki konuşmaların özeti:",
+        color=discord.Color.purple(),
+        timestamp=datetime.now()
+    )
+    
+    word_list = "\n".join([f"• {word}: {count}" for word, count in most_common_words])
+    embed.add_field(name="🏆 En Çok Kelimeler", value=word_list or "Yok", inline=True)
+    
+    emoji_list = "\n".join([f"• {emoji}: {count}" for emoji, count in most_common_emojis])
+    embed.add_field(name="🥰 En Çok Emojiler", value=emoji_list or "Yok", inline=True)
+    
+    embed.add_field(name="📅 En Yoğun Gün", value=f"{busiest_day_str} ({busiest_count} mesaj)", inline=False)
+    embed.add_field(name="❤️ Aşkım Sayacı", value=f"Tam **{askim_count}** kez 'aşkım' dediniz!", inline=False)
+    
+    embed.set_footer(text=f"Analizi isteyen: {ctx.author.name}")
+    await ctx.send(embed=embed)
 
 @bot.command(name='mesaj')
 async def send_private_message(ctx, *, message_content):
@@ -162,7 +173,15 @@ async def send_private_message(ctx, *, message_content):
     
     recipient = await bot.fetch_user(recipient_id)
     if recipient:
-        await recipient.send(f"💌 **{ctx.author.name}** sana bir mesaj gönderdi:\n\n{message_content}")
+        embed = discord.Embed(
+            title="💌 Yeni Bir Mesajın Var!",
+            description=message_content,
+            color=discord.Color.gold(),
+            timestamp=datetime.now()
+        )
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url if ctx.author.avatar else None)
+        
+        await recipient.send(embed=embed)
         if ctx.guild:
             await ctx.message.delete()
         await ctx.author.send("Mesajın başarıyla gönderildi! ✅", delete_after=5)

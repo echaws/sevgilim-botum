@@ -6,7 +6,8 @@ Bu bot, çiftler için özel olarak hazırlanmış bir Discord botudur. Sevgilil
 
 - **Yıl Dönümü Sayacı:** Her sabah saat 09:00'da yıl dönümüne kaç gün kaldığını her iki kullanıcıya da DM yoluyla bildirir.
 - **Rastgele Film Önerileri:** Günün belirlenmiş saatlerinde (12:00, 15:00, 18:00, 21:00) her iki kullanıcıya da rastgele film önerileri gönderir.
-- **Gizli Mesaj Komutu:** `!mesaj <mesajınız>` komutu ile partnerinize bot üzerinden mesaj gönderebilirsiniz. Komutu kullandığınız kanal temizlenir (mesajınız silinir) ve mesaj sadece partnerinize gider.
+- **Gizli Mesaj Komutu:** `!mesaj <mesajınız>` komutu ile partnerinize bot üzerinden mesaj gönderebilirsiniz. 
+- **Chat Analiz Sistemi:** `!analiz` komutu ile en çok kullandığınız kelimeleri, emojileri ve birbirinize kaç kez "aşkım" dediğinizi görebilirsiniz.
 
 ## Kurulum ve Çalıştırma
 

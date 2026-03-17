@@ -33,7 +33,10 @@ with open('movies.json', 'r') as f:
 def get_days_until_anniversary():
     if not ANNIVERSARY_DATE_STR:
         return 0
-    anniversary_date = datetime.strptime(ANNIVERSARY_DATE_STR, '%Y-%m-%d').date()
+    try:
+        anniversary_date = datetime.strptime(ANNIVERSARY_DATE_STR, '%Y-%m-%d').date()
+    except:
+        return 0
     today = date.today()
     
     # Get the next anniversary occurrence
@@ -62,6 +65,8 @@ async def send_anniversary_message():
     if user2: await user2.send(embed=embed)
 
 async def send_random_movie():
+    if not MOVIES:
+        return
     movie = random.choice(MOVIES)
     
     embed = discord.Embed(
@@ -131,7 +136,10 @@ async def analyze_chat(ctx):
         try:
             dt = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S.%f')
         except ValueError:
-            dt = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
+            try:
+                dt = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
+            except:
+                continue
         days[str(dt.date())] += 1
 
     words = re.findall(r'\w+', all_text)

@@ -10,6 +10,7 @@ from apscheduler.triggers.cron import CronTrigger
 import collections
 import re
 import database
+import aiohttp
 
 # Load environment variables
 load_dotenv()
@@ -29,6 +30,17 @@ database.init_db()
 # Load movies
 with open('movies.json', 'r') as f:
     MOVIES = json.load(f)
+
+async def get_random_cat_gif():
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get("https://api.thecatapi.com/v1/images/search?mime_types=gif") as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    return data[0]['url']
+    except Exception as e:
+        print(f"Kedi GIF'i alınırken hata oluştu: {e}")
+    return None
 
 def get_days_until_anniversary():
     if not ANNIVERSARY_DATE_STR:
@@ -83,6 +95,26 @@ async def send_random_movie():
     if user1: await user1.send(embed=embed)
     if user2: await user2.send(embed=embed)
 
+async def send_random_cat():
+    gif_url = await get_random_cat_gif()
+    if not gif_url:
+        return
+        
+    embed = discord.Embed(
+        title="🐱 Günün Kedi GIF'i",
+        description="Şu tatlışlığa bak! 😍",
+        color=discord.Color.from_rgb(255, 192, 203), # Pink
+        timestamp=datetime.now()
+    )
+    embed.set_image(url=gif_url)
+    embed.set_footer(text="Günün neşesi olsun!")
+    
+    user1 = await bot.fetch_user(USER1_ID)
+    user2 = await bot.fetch_user(USER2_ID)
+    
+    if user1: await user1.send(embed=embed)
+    if user2: await user2.send(embed=embed)
+
 @bot.event
 async def on_ready():
     print(f'Bot {bot.user.name} olarak giriş yaptı!')
@@ -94,10 +126,16 @@ async def on_ready():
     scheduler.add_job(send_anniversary_message, CronTrigger(hour=9, minute=0))
     
     # Random movie suggestions
-    times = ["12:00", "15:00", "18:00", "21:00"]
+    times = ["12:00", "18:00", "21:00"]
     for t in times:
         h, m = map(int, t.split(':'))
         scheduler.add_job(send_random_movie, CronTrigger(hour=h, minute=m))
+        
+    # Random cat GIFs (3 times daily)
+    cat_times = ["10:30", "14:30", "19:30"]
+    for t in cat_times:
+        h, m = map(int, t.split(':'))
+        scheduler.add_job(send_random_cat, CronTrigger(hour=h, minute=m))
         
     scheduler.start()
 
